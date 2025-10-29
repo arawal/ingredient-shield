@@ -46,8 +46,12 @@ export function ResultClient() {
           throw new Error(authError?.message || 'Please sign in to scan products');
         }
 
+        // Include session token in the function call
         const { data, error } = await supabase.functions.invoke('check-product', {
-          body: { barcode }
+          body: { barcode },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         });
 
         if (error) throw error;
