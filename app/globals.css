@@ -63,12 +63,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground min-h-screen flex flex-col;
-  }
-}
-
-@layer components {
-  .container {
-    @apply max-w-7xl mx-auto;
+    @apply bg-background text-foreground;
   }
 }
