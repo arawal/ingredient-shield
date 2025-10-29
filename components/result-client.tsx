@@ -39,6 +39,13 @@ export function ResultClient() {
       try {
         const supabase = createClient();
         
+        // Get the session before making the function call
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        
+        if (authError || !session) {
+          throw new Error(authError?.message || 'Please sign in to scan products');
+        }
+
         const { data, error } = await supabase.functions.invoke('check-product', {
           body: { barcode }
         });

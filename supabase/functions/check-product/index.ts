@@ -1,4 +1,5 @@
-import { serve } from "std/http/server"
+import { serve } from "std/http/server";
+import { createClient } from "@supabase/supabase-js";
 
 // This is your Rules Engine!
 interface Rule {
@@ -38,9 +39,36 @@ serve(async (req: Request) => {
     if (!barcode) throw new Error("Barcode is required");
 
     // 1. Get user from auth header
-    // (We will add this in a later step, for now it's public)
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing auth header');
+    }
 
-    // 2. Fetch product from Open Food Facts
+    // Create Supabase client using automatic env vars
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    
+    // Get user ID from JWT
+    const jwt = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
+    
+    if (userError || !user) {
+      throw new Error('Invalid auth token');
+    }
+
+    // 2. Fetch user's rules from database
+    const { data: userRules, error: rulesError } = await supabase
+      .from('rules')
+      .select('type, value')
+      .eq('user_id', user.id);
+
+    if (rulesError) {
+      throw new Error('Failed to fetch user rules');
+    }
+
+    // 3. Fetch product from Open Food Facts
     const offResponse = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
     if (!offResponse.ok) throw new Error("Product not found");
     
@@ -48,15 +76,8 @@ serve(async (req: Request) => {
     const ingredients = productData.product?.ingredients_text || "";
     const productName = productData.product?.product_name || "Unknown Product";
 
-    // 3. Get user's rules (Mocked for now)
-    // In a real step, you'd fetch this from Supabase DB based on user auth
-    const mockUserRules = [
-      { type: 'allergy', value: 'peanuts' },
-      { type: 'ethics', value: 'palm oil' }
-    ];
-
     // 4. Run the rules engine
-    const violations = await runRulesEngine(ingredients, mockUserRules);
+    const violations = await runRulesEngine(ingredients, userRules);
 
     const status = violations.length > 0 ? "red" : "green";
 
