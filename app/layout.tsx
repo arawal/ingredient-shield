@@ -14,9 +14,20 @@ export const metadata: Metadata = {
   description: "Scan food products to check ingredients against your dietary restrictions",
   manifest: "/manifest.json",
   icons: {
+    icon: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: ["/icon-192x192.png"],
     apple: [
       { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "mask-icon",
+        url: "/icon-512x512.png",
+      },
     ],
   },
   themeColor: "#000000",
@@ -24,6 +35,10 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Ingredient Shield",
+  },
+  other: {
+    "msapplication-TileColor": "#000000",
+    "msapplication-config": "/icon-192x192.png",
   },
 };
 
