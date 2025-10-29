@@ -10,7 +10,14 @@ interface ProductResult {
   productName: string;
   status: 'green' | 'red';
   violations: string[];
-  ingredients: string[];
+  ingredients?: string[] | string | null;
+}
+
+function formatIngredients(ingredients: string[] | string | null | undefined): string {
+  if (!ingredients) return 'No ingredients information available';
+  if (Array.isArray(ingredients)) return ingredients.join(', ');
+  if (typeof ingredients === 'string') return ingredients;
+  return 'Invalid ingredients format';
 }
 
 export function ResultClient() {
@@ -100,11 +107,9 @@ export function ResultClient() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">{result.productName}</h2>
-            {result.ingredients && (
-              <p className="text-sm text-muted-foreground">
-                Ingredients: {result.ingredients.join(', ')}
-              </p>
-            )}
+            <p className="text-sm text-muted-foreground">
+              Ingredients: {formatIngredients(result.ingredients)}
+            </p>
           </div>
 
           {!isGreen && result.violations.length > 0 && (
