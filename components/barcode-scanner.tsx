@@ -21,68 +21,87 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 
   useEffect(() => {
-    // Initialize the code reader
-    codeReaderRef.current = new BrowserMultiFormatReader();
+    async function initializeCamera() {
+      try {
+        // First check camera permission
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasCamera(true);
 
-    // Get available cameras
-    navigator.mediaDevices.enumerateDevices()
-      .then(devices => {
+        // Initialize the code reader
+        codeReaderRef.current = new BrowserMultiFormatReader();
+
+        // Get available cameras
+        const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
         setDevices(videoDevices);
+
         // Select the back camera by default (usually the last device)
         if (videoDevices.length > 0) {
-          setSelectedDevice(videoDevices[videoDevices.length - 1].deviceId);
+          const defaultDevice = videoDevices[videoDevices.length - 1].deviceId;
+          setSelectedDevice(defaultDevice);
+          
+          // Automatically start scanning with the selected camera
+          if (videoRef.current && codeReaderRef.current) {
+            setIsScanning(true);
+            await codeReaderRef.current.decodeFromVideoDevice(
+              defaultDevice,
+              videoRef.current,
+              (result, err) => {
+                if (result) {
+                  onScan(result.getText());
+                }
+                if (err && !(err instanceof NotFoundException)) {
+                  setError('Scanning error: ' + err.message);
+                }
+              }
+            );
+          }
         }
-      })
-      .catch(err => setError('Error accessing camera: ' + err.message));
+      } catch (err) {
+        setError('Error accessing camera: ' + (err as Error).message);
+        setHasCamera(false);
+      }
+    }
+
+    initializeCamera();
 
     return () => {
       if (codeReaderRef.current) {
         codeReaderRef.current.reset();
       }
     };
-  }, []);
+  }, [onScan]);
 
-  const startScanning = async () => {
-    if (!videoRef.current || !selectedDevice || !codeReaderRef.current) {
-      setError('Camera not available');
-      return;
-    }
-
+  const switchCamera = async (deviceId: string) => {
     try {
-      setIsScanning(true);
-      setError('');
-
-      await codeReaderRef.current.decodeFromVideoDevice(
-        selectedDevice, 
-        videoRef.current,
-        (result, err) => {
-          if (result) {
-            onScan(result.getText());
-            // Optionally stop scanning after successful scan
-            // stopScanning();
-          }
-          if (err && !(err instanceof NotFoundException)) {
-            setError('Scanning error: ' + err.message);
-          }
+      if (codeReaderRef.current) {
+        // Stop current scanning
+        codeReaderRef.current.reset();
+        setIsScanning(false);
+        
+        // Start scanning with new device
+        if (videoRef.current) {
+          setIsScanning(true);
+          setError('');
+          await codeReaderRef.current.decodeFromVideoDevice(
+            deviceId,
+            videoRef.current,
+            (result, err) => {
+              if (result) {
+                onScan(result.getText());
+              }
+              if (err && !(err instanceof NotFoundException)) {
+                setError('Scanning error: ' + err.message);
+              }
+            }
+          );
         }
-      );
+      }
+      setSelectedDevice(deviceId);
     } catch (err) {
-      setError('Failed to start scanning: ' + (err as Error).message);
+      setError('Failed to switch camera: ' + (err as Error).message);
       setIsScanning(false);
     }
-  };
-
-  const stopScanning = () => {
-    if (codeReaderRef.current) {
-      codeReaderRef.current.reset();
-      setIsScanning(false);
-    }
-  };
-
-  const switchCamera = (deviceId: string) => {
-    stopScanning();
-    setSelectedDevice(deviceId);
   };
 
   const [manualInput, setManualInput] = useState('');
@@ -174,36 +193,34 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
             )}
 
             <div className="flex flex-col space-y-4">
-              <div className="flex justify-center space-x-2">
-                {!isScanning ? (
-                  <Button onClick={startScanning} className="w-full">
-                    Start Camera
-                  </Button>
-                ) : (
-                  <Button variant="secondary" onClick={stopScanning} className="w-full">
-                    Stop Camera
-                  </Button>
-                )}
-              </div>
-
               {error && (
-                <p className="text-red-500 text-center text-sm">{error}</p>
+                <div className="bg-destructive/10 p-4 rounded-lg">
+                  <p className="text-destructive text-center text-sm">{error}</p>
+                </div>
               )}
 
-              <p className="text-center text-sm text-muted-foreground">
-                Or manually enter the barcode:
-              </p>
+              <div className="space-y-2">
+                <p className="text-center text-sm text-muted-foreground">
+                  {isScanning 
+                    ? "Point your camera at a barcode to scan"
+                    : "Initializing camera..."}
+                </p>
 
-              <form onSubmit={handleManualSubmit} className="space-y-2">
-                <Input
-                  placeholder="Enter barcode number"
-                  value={manualInput}
-                  onChange={(e) => setManualInput(e.target.value)}
-                />
-                <Button type="submit" variant="outline" className="w-full">
-                  Submit Barcode
-                </Button>
-              </form>
+                <p className="text-center text-sm text-muted-foreground">
+                  Or manually enter the barcode:
+                </p>
+
+                <form onSubmit={handleManualSubmit} className="space-y-2">
+                  <Input
+                    placeholder="Enter barcode number"
+                    value={manualInput}
+                    onChange={(e) => setManualInput(e.target.value)}
+                  />
+                  <Button type="submit" variant="outline" className="w-full">
+                    Submit Barcode
+                  </Button>
+                </form>
+              </div>
             </div>
           </div>
         </CardContent>
