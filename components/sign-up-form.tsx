@@ -40,15 +40,22 @@ export function SignUpForm({
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Sign up the user
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
-        },
+        password
       });
-      if (error) throw error;
-      router.push("/auth/sign-up-success");
+      if (signUpError) throw signUpError;
+
+      // Since email verification is disabled, immediately sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (signInError) throw signInError;
+
+      // Redirect to protected area since we're now signed in
+      router.push("/protected");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
