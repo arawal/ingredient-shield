@@ -1,6 +1,12 @@
+-- Enable UUID extension if not already enabled
+create extension if not exists "uuid-ossp";
+
+-- Drop existing table and recreate with updated schema
+drop table if exists rules;
+
 -- Create a new rules table with RLS policies
-create table if not exists rules (
-  id uuid default uuid_generate_v4() primary key,
+create table rules (
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade not null,
   type text not null check (type in ('allergy', 'ethics', 'health')),
   value text not null,

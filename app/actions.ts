@@ -5,26 +5,19 @@ import { revalidatePath } from 'next/cache';
 
 export type Rule = {
   id: string;
+  user_id: string;
   type: 'allergy' | 'ethics' | 'health';
   value: string;
   created_at: string;
+  updated_at: string;
 };
 
 export async function getRules() {
   const supabase = await createClient();
-  
-  // First check if we have an authenticated user
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    console.error('No authenticated user found');
-    return [];
-  }
 
   const { data: rules, error } = await supabase
     .from('rules')
     .select('*')
-    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -45,9 +38,9 @@ export async function addRule(formData: FormData) {
     throw new Error('Type and value are required');
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session }, error: authError } = await supabase.auth.getSession();
   
-  if (!user) {
+  if (authError || !session?.user?.id) {
     throw new Error('Not authenticated');
   }
 
@@ -56,7 +49,7 @@ export async function addRule(formData: FormData) {
     .insert([{ 
       type, 
       value,
-      user_id: user.id 
+      user_id: session.user.id
     }]);
 
   if (error) {

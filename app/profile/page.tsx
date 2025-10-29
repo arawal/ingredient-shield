@@ -30,10 +30,17 @@ export default async function ProfilePage() {
       <div className="w-full max-w-2xl space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>My Rules</CardTitle>
-            <CardDescription>
-              Manage your food preferences and restrictions
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>My Rules</CardTitle>
+                <CardDescription>
+                  Manage your food preferences and restrictions
+                </CardDescription>
+              </div>
+              <Button asChild>
+                <a href="/scan">Scan Product</a>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Add Rule Form */}
