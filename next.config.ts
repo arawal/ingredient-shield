@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  output: 'export',
+  distDir: 'dist',
   typescript: {
     // Don't run type checking during build - we'll run it separately
     ignoreBuildErrors: true
