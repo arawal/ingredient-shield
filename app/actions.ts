@@ -12,9 +12,19 @@ export type Rule = {
 
 export async function getRules() {
   const supabase = await createClient();
+  
+  // First check if we have an authenticated user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    console.error('No authenticated user found');
+    return [];
+  }
+
   const { data: rules, error } = await supabase
     .from('rules')
     .select('*')
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -35,9 +45,19 @@ export async function addRule(formData: FormData) {
     throw new Error('Type and value are required');
   }
 
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+
   const { error } = await supabase
     .from('rules')
-    .insert([{ type, value }]);
+    .insert([{ 
+      type, 
+      value,
+      user_id: user.id 
+    }]);
 
   if (error) {
     console.error('Error adding rule:', error);
