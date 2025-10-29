@@ -4,8 +4,10 @@
   "description": "Scan food products to check ingredients against your dietary restrictions",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#000000",
+  "categories": ["food", "health", "lifestyle"],
   "icons": [
     {
       "src": "/icon-192x192.png",
@@ -16,7 +18,17 @@
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Scan Product",
+      "short_name": "Scan",
+      "description": "Scan a food product",
+      "url": "/scan",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }
