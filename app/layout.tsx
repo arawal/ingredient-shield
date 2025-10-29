@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -64,12 +66,6 @@ export const metadata: Metadata = {
   },
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  display: "swap",
-  subsets: ["latin"],
-});
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -85,7 +81,7 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png" />
       </head>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
