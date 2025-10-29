@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.192.0/http/server.ts"
+import { serve } from "std/http/server"
 
 // This is your Rules Engine!
 interface Rule {
