@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -27,18 +26,41 @@ export const metadata: Metadata = {
       {
         rel: "mask-icon",
         url: "/icon-512x512.png",
+        color: "#000000",
       },
     ],
   },
-  themeColor: "#000000",
+  applicationName: "Ingredient Shield",
+  referrer: "origin-when-cross-origin",
+  keywords: ["food", "ingredients", "dietary", "restrictions", "scanner"],
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Ingredient Shield",
   },
-  other: {
-    "msapplication-TileColor": "#000000",
-    "msapplication-config": "/icon-192x192.png",
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    title: "Ingredient Shield",
+    description: "Scan food products to check ingredients against your dietary restrictions",
+    images: [{ url: "/icon-512x512.png", width: 512, height: 512 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ingredient Shield",
+    description: "Scan food products to check ingredients against your dietary restrictions",
+    images: ["/icon-512x512.png"],
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
   },
 };
 
@@ -53,8 +75,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = createClient();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
