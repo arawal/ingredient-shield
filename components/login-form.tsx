@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { signInAnonymously } from "@/lib/supabase/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -93,14 +94,46 @@ export function LoginForm({
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/auth/sign-up"
-                className="underline underline-offset-4"
+            <div className="mt-4 flex flex-col gap-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={async () => {
+                  setIsLoading(true);
+                  setError(null);
+                  try {
+                    const { error } = await signInAnonymously();
+                    if (error) throw error;
+                    router.push("/protected");
+                  } catch (error: unknown) {
+                    setError(error instanceof Error ? error.message : "An error occurred");
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading}
               >
-                Sign up
-              </Link>
+                Continue Anonymously
+              </Button>
+              <div className="text-center text-sm">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href="/auth/sign-up"
+                  className="underline underline-offset-4"
+                >
+                  Sign up
+                </Link>
+              </div>
             </div>
           </form>
         </CardContent>
