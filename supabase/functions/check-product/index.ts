@@ -1,5 +1,5 @@
 import { serve } from "std/http/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 // This is your Rules Engine!
 interface Rule {
@@ -7,19 +7,58 @@ interface Rule {
   value: string;
 }
 
-async function runRulesEngine(productIngredients: string, userRules: Rule[]) {
+interface IngredientMapping {
+  rule_value: string;
+  synonyms: string[];
+}
+
+async function runRulesEngine(productIngredients: string, userRules: Rule[], supabase: SupabaseClient) {
   const violations: string[] = [];
   const ingredientsLower = productIngredients.toLowerCase();
 
+  // Fetch ingredient mappings for all user rules at once
+  const { data: mappings, error: mappingsError } = await supabase
+    .from('ingredient_mappings')
+    .select('rule_value, synonyms')
+    .in('rule_value', userRules.map(rule => rule.value.toLowerCase()));
+
+  if (mappingsError) {
+    console.error('Error fetching ingredient mappings:', mappingsError);
+    // Fall back to basic check if mappings fail
+    for (const rule of userRules) {
+      if (ingredientsLower.includes(rule.value.toLowerCase())) {
+        violations.push(rule.value);
+      }
+    }
+    return violations;
+  }
+
+  // Create a map for quick access to synonyms
+  const mappingsMap = new Map<string, string[]>();
+  mappings.forEach((mapping: IngredientMapping) => {
+    mappingsMap.set(mapping.rule_value, mapping.synonyms);
+  });
+
+  // Check each rule against ingredients
   for (const rule of userRules) {
     const ruleValueLower = rule.value.toLowerCase();
-    
-    // This is a simple MVP check.
-    // You'll expand this in Step 12.
+    const synonyms = mappingsMap.get(ruleValueLower) || [];
+
+    // First check the main rule value
     if (ingredientsLower.includes(ruleValueLower)) {
       violations.push(rule.value);
+      continue; // Skip synonym checks if main value is found
+    }
+
+    // Then check all synonyms
+    for (const synonym of synonyms) {
+      if (ingredientsLower.includes(synonym.toLowerCase())) {
+        violations.push(rule.value);
+        break; // Stop checking synonyms once we find a match
+      }
     }
   }
+
   return violations;
 }
 
@@ -77,7 +116,7 @@ serve(async (req: Request) => {
     const productName = productData.product?.product_name || "Unknown Product";
 
     // 4. Run the rules engine
-    const violations = await runRulesEngine(ingredients, userRules);
+    const violations = await runRulesEngine(ingredients, userRules, supabase);
 
     const status = violations.length > 0 ? "red" : "green";
 
