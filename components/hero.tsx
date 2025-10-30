@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 // Define the BeforeInstallPromptEvent type
 interface BeforeInstallPromptEvent extends Event {
@@ -91,41 +92,71 @@ export function Hero() {
 
         {/* Installation Card */}
         <Card className="mt-4 w-full max-w-md p-4">
-          <h3 className="text-lg font-semibold text-center">📱 Install as an App</h3>
-          <div className="mt-3 space-y-4">
-            {isInstallable ? (
-              <div className="text-center">
-                <Button 
-                  variant="secondary" 
-                  className="w-full"
-                  onClick={handleInstallClick}
-                >
-                  Install Now
-                </Button>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Install for faster access and offline capabilities
-                </p>
-              </div>
-            ) : isIOS ? (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">To install on iOS:</p>
-                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                  <li>Tap the <span className="font-semibold">Share</span> button ↗️</li>
-                  <li>Scroll and select <span className="font-semibold">Add to Home Screen</span></li>
-                  <li>Tap <span className="font-semibold">Add</span> in the top right</li>
-                </ol>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">To install on Android/Desktop:</p>
-                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                  <li>Open in Chrome browser</li>
-                  <li>Tap the menu (⋮) in the top right</li>
-                  <li>Select <span className="font-semibold">Install app</span></li>
-                </ol>
-              </div>
-            )}
-          </div>
+          <h3 className="text-lg font-semibold text-center mb-4">📱 Install as an App</h3>
+          {isInstallable ? (
+            <div className="text-center space-y-3">
+              <Button 
+                variant="secondary" 
+                className="w-full"
+                onClick={handleInstallClick}
+              >
+                Quick Install
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Install for offline access and better performance
+              </p>
+            </div>
+          ) : (
+            <Tabs defaultValue={isIOS ? "ios" : "android"} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="ios">iPhone / iPad</TabsTrigger>
+                <TabsTrigger value="android">Android / Chrome</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="ios" className="space-y-4">
+                <div className="mt-4">
+                  <p className="text-sm font-medium mb-3">Using Safari browser:</p>
+                  <ol className="text-sm space-y-2 list-decimal pl-5">
+                    <li className="pl-2">
+                      Tap the <strong>Share</strong> button (↑) at the bottom of Safari
+                    </li>
+                    <li className="pl-2">
+                      Scroll down in the share menu and tap <strong>Add to Home Screen</strong>
+                    </li>
+                    <li className="pl-2">
+                      Review the app name and tap <strong>Add</strong> in the top right
+                    </li>
+                  </ol>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Note: Installation only works in Safari browser on iOS
+                  </p>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="android" className="space-y-4">
+                <div className="mt-4">
+                  <p className="text-sm font-medium mb-3">Using Chrome browser:</p>
+                  <ol className="text-sm space-y-2 list-decimal pl-5">
+                    <li className="pl-2">
+                      When you see the installation banner at the bottom, tap <strong>Install</strong>
+                    </li>
+                    <li className="pl-2">
+                      If no banner appears, tap the menu button <strong>(⋮)</strong> at the top right
+                    </li>
+                    <li className="pl-2">
+                      Select <strong>Install app</strong> from the menu
+                    </li>
+                    <li className="pl-2">
+                      Tap <strong>Install</strong> in the confirmation dialog
+                    </li>
+                  </ol>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Note: Installation works best in Chrome browser
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
         </Card>
       </div>
     </div>
