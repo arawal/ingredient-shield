@@ -18,7 +18,7 @@ export default function ScanPage() {
         <h1 className="text-2xl font-bold">Scan Product Barcode</h1>
         <Button 
           variant="ghost" 
-          onClick={() => router.push('/profile')}
+          onClick={() => window.location.href = '/profile'}
         >
           Back to Profile
         </Button>
@@ -27,7 +27,7 @@ export default function ScanPage() {
       <div className="bg-card rounded-lg shadow-lg p-4">
         <BarcodeScanner 
           onScan={handleScan}
-          onClose={() => router.push('/profile')}
+          onClose={() => window.location.href = '/profile'}
         />
         <p className="text-sm text-muted-foreground mt-4 text-center">
           Position the barcode in the center of the camera view

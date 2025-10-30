@@ -166,7 +166,20 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
                 variant="secondary"
                 size="sm"
                 className="absolute top-2 right-2"
-                onClick={onClose}
+                onClick={() => {
+                  // Stop video tracks
+                  if (videoRef.current && videoRef.current.srcObject instanceof MediaStream) {
+                    const tracks = videoRef.current.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                    videoRef.current.srcObject = null;
+                  }
+                  // Reset code reader
+                  if (codeReaderRef.current) {
+                    codeReaderRef.current.reset();
+                    setIsScanning(false);
+                  }
+                  onClose?.();
+                }}
               >
                 Close
               </Button>
