@@ -138,13 +138,10 @@ export function Hero() {
                   <p className="text-sm font-medium mb-3">Using Chrome browser:</p>
                   <ol className="text-sm space-y-2 list-decimal pl-5">
                     <li className="pl-2">
-                      When you see the installation banner at the bottom, tap <strong>Install</strong>
+                      Tap the menu button <strong>(⋮)</strong> at the top right
                     </li>
                     <li className="pl-2">
-                      If no banner appears, tap the menu button <strong>(⋮)</strong> at the top right
-                    </li>
-                    <li className="pl-2">
-                      Select <strong>Install app</strong> from the menu
+                      Select <strong>Install Ingredient Shield...</strong> from the menu
                     </li>
                     <li className="pl-2">
                       Tap <strong>Install</strong> in the confirmation dialog
